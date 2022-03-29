@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:PasswordKeeperApp"
         mc:Ignorable="d" Loaded="MainPageLoaded_ev"
         Title="MainWindow" Height="450" Width="800">
+
     <Grid ShowGridLines="False">
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>
@@ -58,30 +59,67 @@
             </ListView.View>
         </ListView>
 
-        <!-- Password search menu -->
-        <StackPanel
+        
+        <Grid
             Grid.Column="1"
-            Grid.Row="1"
-            Margin="0,155,0,10">
+            Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            
+            <!-- Success Alert -->
+            <DockPanel
+                Margin="20"
+                Background="LightGreen"
+                Name="AlertBox"
+                Visibility="Collapsed">
 
-            <Label
-                Content="Find password"
-                HorizontalAlignment="Center"/>
+                <Label
+                    Name="AlertLabel"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="Success"
+                    FontSize="25"/>
 
-            <TextBox
-                Name="SearchTextBox"
-                Grid.Column="1"
+            </DockPanel>
+            
+            <!-- Password search menu -->
+            <StackPanel
                 Grid.Row="1"
-                Width="auto"
-                Margin="5px 0"
-                TextChanged="SearchTextBox_TextChanged"
-                GotFocus="SearchTextBox_Enter"
-                LostFocus="SearchTextBox_Leave">
-                <TextBox.Background>
-                    <ImageBrush ImageSource="D:\PasswordKeeper\PasswordKeeper\Image\lofiGirl.gif" AlignmentX="Left" Stretch="None" />
-                </TextBox.Background>
-            </TextBox>
-        </StackPanel>
+                VerticalAlignment="Bottom"
+                Margin="0 0 0 10px">
+
+                <Label
+                    Content="Find password"
+                    HorizontalAlignment="Center"/>
+
+                <TextBox
+                    Name="SearchTextBox"
+                    Grid.Column="1"
+                    Grid.Row="1"
+                    Width="auto"
+                    Margin="5px 0"
+                    TextChanged="SearchTextBox_TextChanged"
+                    GotFocus="TextBox_Enter"
+                    LostFocus="TextBox_Leave">
+                    <TextBox.Background>
+                        <VisualBrush
+                            Stretch="None">
+                            <VisualBrush.Visual>
+                                <Label
+                                    Name="PassSearchWatermark"
+                                    Content="Search Site"
+                                    HorizontalAlignment="Center"
+                                    FontStyle="Italic"
+                                    Foreground="Gray"
+                                    FontSize="12"/>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </TextBox.Background>
+                </TextBox>
+            </StackPanel>
+        </Grid>
 
         <!-- Password menu -->
         <Grid
@@ -116,7 +154,26 @@
                 <TextBox
                     Margin="5px"
                     Name="newSiteName"
-                    Width="auto">
+                    Width="auto"
+                    GotFocus="TextBox_Enter"
+                    LostFocus="TextBox_Leave">
+
+                    <TextBox.Background>
+                        <VisualBrush
+                            Stretch="None">
+                            <VisualBrush.Visual>
+                                <Label
+                                    Name="newSiteWatermark"
+                                    Content="Site name"
+                                    HorizontalContentAlignment="Center"
+                                    FontStyle="Italic"
+                                    Foreground="Gray"
+                                    FontSize="12"
+                                    Background="White"
+                                    Width="10000"/>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </TextBox.Background>
                 </TextBox>
 
                 <Label
@@ -126,7 +183,26 @@
                 <TextBox
                     Margin="5px"
                     Name="newPassword"
-                    Width="auto">
+                    Width="auto"
+                    GotFocus="TextBox_Enter"
+                    LostFocus="TextBox_Leave">
+
+                    <TextBox.Background>
+                        <VisualBrush
+                            Stretch="None">
+                            <VisualBrush.Visual>
+                                <Label
+                                    Name="newPasswordWatermark"
+                                    Content="Password"
+                                    HorizontalContentAlignment="Center"
+                                    FontStyle="Italic"
+                                    Foreground="Gray"
+                                    FontSize="12"
+                                    Background="White"
+                                    Width="10000"/>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </TextBox.Background>
                 </TextBox>
 
                 <Button
@@ -184,7 +260,9 @@
                 <TextBox
                     Margin="5px"
                     Name="editSiteName"
-                    Width="auto">
+                    Width="auto"
+                    GotFocus="TextBox_Enter"
+                    LostFocus="TextBox_Leave">
                 </TextBox>
 
                 <Label
@@ -194,7 +272,9 @@
                 <TextBox
                     Margin="5px"
                     Name="editPassword"
-                    Width="auto">
+                    Width="auto"
+                    GotFocus="TextBox_Enter"
+                    LostFocus="TextBox_Leave">
                 </TextBox>
 
                 <Button

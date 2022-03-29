@@ -15,6 +15,8 @@ using System.Windows.Shapes;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Data;
+using System.Timers;
+using System.Windows.Threading;
 
 namespace PasswordKeeperApp
 {
@@ -29,6 +31,9 @@ namespace PasswordKeeperApp
         private List<string[]> dbRows = null;
         // List of filtered db data
         private List<string[]> filteredDbRows = new List<string[]>();
+
+        // Timer for an alert status text
+        Timer alertTimer = new Timer();
 
         SqlDataReader dataReader = null;
 
@@ -141,51 +146,104 @@ namespace PasswordKeeperApp
         /// Adding placeholder text to "Find password" textbox
 
         // Remove placeholder event
-        private void SearchTextBox_Enter(object sender, RoutedEventArgs e)
+        private void TextBox_Enter(object sender, RoutedEventArgs e)
         {
-            if (SearchTextBox.Background != null)
-            {
-                SearchTextBox.Background = null;
-            }
+            // Fetch textbox
+            TextBox textBox = sender as TextBox;
+
+            textBox.Background = new SolidColorBrush(Colors.White);
         }
 
         // Add placeholder event
-        private void SearchTextBox_Leave(object sender, RoutedEventArgs e)
+        private void TextBox_Leave(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
+            // Fetch textbox
+            TextBox textBox = sender as TextBox;
+
+            showWatermark(textBox);
+        }
+
+        // Show watermark method
+        private void showWatermark(TextBox textBox)
+        {
+            if (string.IsNullOrWhiteSpace(textBox.Text))
             {
-                if (SearchTextBox.Text != "")
+                if (textBox.Text != "")
                 {
-                    SearchTextBox.Text = "";
+                    textBox.Text = "";
                 }
 
-                // Create an ImageBrush.
-                ImageBrush textImageBrush = new ImageBrush();
-                textImageBrush.ImageSource =
-                    new BitmapImage(
-                        new Uri(@"D:\PasswordKeeper\PasswordKeeper\Image\lofiGirl.gif", UriKind.Relative)
-                    );
-                textImageBrush.AlignmentX = AlignmentX.Left;
-                textImageBrush.Stretch = Stretch.None;
+                // Set watermark content
+                string textBoxWatermark = null;
 
-                SearchTextBox.Background = textImageBrush;
+                if (textBox.Name == "SearchTextBox")
+                {
+                    textBoxWatermark = "Search Site";
+                }
+                else if (textBox.Name == "editSiteName" || textBox.Name == "newSiteName")
+                {
+                    textBoxWatermark = "Site name";
+                }
+                else
+                {
+                    textBoxWatermark = "Password";
+                }
+
+                // Create an VisualBrush.
+                VisualBrush textVisualBrush = new VisualBrush();
+                textVisualBrush.Stretch = Stretch.None;
+
+                // Create the watermark
+                Label searchBoxWatermark = new Label();
+
+                searchBoxWatermark.HorizontalContentAlignment = HorizontalAlignment.Center;
+                searchBoxWatermark.Width = 10000;
+                searchBoxWatermark.Content = textBoxWatermark;
+                searchBoxWatermark.HorizontalAlignment = HorizontalAlignment.Center;
+                searchBoxWatermark.Foreground = new SolidColorBrush(Colors.Gray);
+                searchBoxWatermark.Background = new SolidColorBrush(Colors.White);
+                searchBoxWatermark.FontSize = 12;
+                searchBoxWatermark.FontStyle = FontStyles.Italic;
+
+                // Insert watermark to textbox
+                textVisualBrush.Visual = searchBoxWatermark;
+                textBox.Background = textVisualBrush;
             }
         }
+
         //////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////
         /// Add new password method
         private void InsertBtn_Click(object sender, RoutedEventArgs e)
         {
-            SqlCommand command = new SqlCommand(
+            try
+            {
+                SqlCommand command = new SqlCommand(
                     $"INSERT INTO [Passwords] (Name, Password) VALUES (@Name, @Password)",
                     sqlConnection);
 
-            command.Parameters.AddWithValue("Name", newSiteName.Text);
-            command.Parameters.AddWithValue("Password", newPassword.Text);
-            command.ExecuteNonQuery();
+                command.Parameters.AddWithValue("Name", newSiteName.Text);
+                command.Parameters.AddWithValue("Password", newPassword.Text);
+                command.ExecuteNonQuery();
 
-            LoadDbData();
+                LoadDbData();
+
+                ShowStatusAlert("Success");
+
+                // Delete data from textboxes
+                newSiteName.Text = "";
+                newPassword.Text = "";
+
+                // Add watermark to textboxes
+                showWatermark(newSiteName);
+                showWatermark(newPassword);
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.Message);
+                ShowStatusAlert("Error");
+            }
         }
         //////////////////////////////////////////////////////
 
@@ -273,6 +331,58 @@ namespace PasswordKeeperApp
             editPasswordId.Text = "";
             editSiteName.Text = "";
             editPassword.Text = "";
+
+            // Set textbox backgroud
+            editSiteName.Background = new SolidColorBrush(Colors.White);
+            editPassword.Background = new SolidColorBrush(Colors.White);
+        }
+
+        //////////////////////////////////////////////////////
+        /// Status alert
+
+        // Show message box
+        private void ShowStatusAlert(String status)
+        {
+            // Message settings
+            if (status == "Success")
+            {
+                AlertBox.Background = new SolidColorBrush(Colors.LightGreen);
+                AlertLabel.Content = "Success";
+
+            }else if(status == "Error")
+            {
+                AlertBox.Background = new SolidColorBrush(Colors.LightPink);
+                AlertLabel.Content = "Error";
+            }
+
+            // Show message
+            AlertBox.Visibility = Visibility.Visible;
+
+            // Wait 3 sec -> Close message box
+            DelayAction(2000, new Action(() => { this.CloseStatusAlert(); }));
+
+
+        }
+
+        // Close message box method
+        private void CloseStatusAlert()
+        {
+            AlertBox.Visibility = Visibility.Collapsed;
+        }
+
+        // Timer implementations
+        private static void DelayAction(int millisecond, Action action)
+        {
+            var timer = new DispatcherTimer();
+            timer.Tick += delegate
+
+            {
+                action.Invoke();
+                timer.Stop();
+            };
+
+            timer.Interval = TimeSpan.FromMilliseconds(millisecond);
+            timer.Start();
         }
     }
 
