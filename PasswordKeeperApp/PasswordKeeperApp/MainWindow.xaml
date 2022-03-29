@@ -1,0 +1,212 @@
+﻿<Window x:Class="PasswordKeeperApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PasswordKeeperApp"
+        mc:Ignorable="d" Loaded="MainPageLoaded_ev"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid ShowGridLines="False">
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <!-- Passwords table -->
+        <ListView
+            Grid.Column="0" 
+            Grid.Row="0" 
+            Grid.RowSpan="2"
+            x:Name="SearchListView"
+            BorderThickness="1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding PassId}" Header="Id" />
+                    <GridViewColumn DisplayMemberBinding="{Binding SiteName}" Header="Site name" />
+                    <GridViewColumn DisplayMemberBinding="{Binding Password}" Header="Password" />
+                    <GridViewColumn Width="100" Header="Edit">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Width="50"
+                                    Name="EditItemBtn"
+                                    Content="Edit"
+                                    Click="showEditMenu"
+                                    CommandParameter="{Binding}">
+                                </Button>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="100" Header="Delete">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Width="50"
+                                    Name="DeleteItemBtn"
+                                    Content="Delete"
+                                    Click="DeleteBtnClick"
+                                    CommandParameter="{Binding}">
+                                </Button>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <!-- Password search menu -->
+        <StackPanel
+            Grid.Column="1"
+            Grid.Row="1"
+            Margin="0,155,0,10">
+
+            <Label
+                Content="Find password"
+                HorizontalAlignment="Center"/>
+
+            <TextBox
+                Name="SearchTextBox"
+                Grid.Column="1"
+                Grid.Row="1"
+                Width="auto"
+                Margin="5px 0"
+                TextChanged="SearchTextBox_TextChanged"
+                GotFocus="SearchTextBox_Enter"
+                LostFocus="SearchTextBox_Leave">
+                <TextBox.Background>
+                    <ImageBrush ImageSource="D:\PasswordKeeper\PasswordKeeper\Image\lofiGirl.gif" AlignmentX="Left" Stretch="None" />
+                </TextBox.Background>
+            </TextBox>
+        </StackPanel>
+
+        <!-- Password menu -->
+        <Grid
+            Margin="10px"
+            Name="PasswordMenuGrid"
+            Grid.Column="1"
+            Grid.Row="0">
+            <Grid.RowDefinitions>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <!-- Add password menu -->
+            <StackPanel
+                Margin="10px"
+                Name="AddPasswordStackPanel"
+                Orientation="Vertical"
+                Grid.Column="1"
+                Grid.Row="0"
+                Background="LightGray">
+
+                <Label
+                    Content="Add a new password"
+                    HorizontalAlignment="Center"/>
+
+                <Label
+                    Content="Site name"
+                    HorizontalAlignment="Left"/>
+
+                <TextBox
+                    Margin="5px"
+                    Name="newSiteName"
+                    Width="auto">
+                </TextBox>
+
+                <Label
+                    Content="Password"
+                    HorizontalAlignment="Left"/>
+
+                <TextBox
+                    Margin="5px"
+                    Name="newPassword"
+                    Width="auto">
+                </TextBox>
+
+                <Button
+                    Name="AddNewPassBtn"
+                    Click="InsertBtn_Click"
+                    MinHeight="20"
+                    Margin="10 5"
+                    Content="Add"
+                    Background="YellowGreen"
+                    BorderThickness="0">
+                </Button>
+            </StackPanel>
+
+            <!-- Edit password menu -->
+            <StackPanel
+                Margin="10px"
+                Name="EditPasswordStackPanel"
+                Orientation="Vertical"
+                Visibility="Collapsed"
+                Grid.Column="0"
+                Grid.Row="0"
+                Background="LightGray">
+
+                <DockPanel>
+
+                    <Label
+                        DockPanel.Dock="Left"
+                        Content="Edit password"
+                        HorizontalAlignment="Center"/>
+
+                    <Button
+                        DockPanel.Dock="Right"
+                        Name="closeEditPassBtn"
+                        Click="CloseEditBtnClick"
+                        MinHeight="20"
+                        Margin="1"
+                        Content="Close"
+                        Background="Red"
+                        BorderThickness="0"
+                        HorizontalAlignment="Right">
+                    </Button>
+                </DockPanel>
+
+                <TextBox
+                    Visibility="Collapsed"
+                    Margin="5px"
+                    Name="editPasswordId"
+                    Width="auto">
+                </TextBox>
+
+                <Label
+                    Content="Site name"
+                    HorizontalAlignment="Left"/>
+
+                <TextBox
+                    Margin="5px"
+                    Name="editSiteName"
+                    Width="auto">
+                </TextBox>
+
+                <Label
+                    Content="Password"
+                    HorizontalAlignment="Left"/>
+
+                <TextBox
+                    Margin="5px"
+                    Name="editPassword"
+                    Width="auto">
+                </TextBox>
+
+                <Button
+                    Name="editPassBtn"
+                    Click="EditBtnClick"
+                    MinHeight="20"
+                    Margin="10 5"
+                    Content="Edit"
+                    Background="LightGoldenrodYellow"
+                    BorderThickness="0">
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
