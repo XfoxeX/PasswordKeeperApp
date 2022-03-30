@@ -83,21 +83,20 @@
                     FontSize="25"/>
 
             </DockPanel>
-            
-            <!-- Password search menu -->
+
+            <!-- Password search menu and key word -->
             <StackPanel
                 Grid.Row="1"
                 VerticalAlignment="Bottom"
                 Margin="0 0 0 10px">
 
+                <!-- Password search menu -->
                 <Label
                     Content="Find password"
                     HorizontalAlignment="Center"/>
 
                 <TextBox
                     Name="SearchTextBox"
-                    Grid.Column="1"
-                    Grid.Row="1"
                     Width="auto"
                     Margin="5px 0"
                     TextChanged="SearchTextBox_TextChanged"
@@ -110,6 +109,37 @@
                                 <Label
                                     Name="PassSearchWatermark"
                                     Content="Search Site"
+                                    HorizontalAlignment="Center"
+                                    FontStyle="Italic"
+                                    Foreground="Gray"
+                                    FontSize="12"/>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </TextBox.Background>
+                </TextBox>
+
+                <!-- Key word menu -->
+                <Label
+                    Margin="0 10 0 0"
+                    Content="Encryption key"
+                    HorizontalAlignment="Center"/>
+
+                <TextBox
+                    BorderBrush="Red"
+                    BorderThickness="2"
+                    Name="encKey"
+                    Width="auto"
+                    Margin="5px 0"
+                    TextChanged="EncKey_TextChanged"
+                    GotFocus="TextBox_Enter"
+                    LostFocus="TextBox_Leave">
+                    <TextBox.Background>
+                        <VisualBrush
+                            Stretch="None">
+                            <VisualBrush.Visual>
+                                <Label
+                                    Name="EncKeyWatermark"
+                                    Content="Enter your encryption key"
                                     HorizontalAlignment="Center"
                                     FontStyle="Italic"
                                     Foreground="Gray"

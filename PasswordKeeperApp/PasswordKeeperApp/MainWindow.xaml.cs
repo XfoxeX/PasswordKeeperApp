@@ -96,24 +96,35 @@ namespace PasswordKeeperApp
         {
             string[] dbRow = null;
             dbRows = new List<string[]>();
-
+            string encPassword = null;
+            
             try
             {
                 SqlCommand sqlCommand = new SqlCommand(
                     "SELECT * FROM Passwords",
                     sqlConnection);
-
+                
                 dataReader = sqlCommand.ExecuteReader();
-
+                
                 while (dataReader.Read())
                 {
-                    dbRow = new string[]
+                    try
+                    {
+                        // Decrypt password
+                        encPassword = CryptClass.Decrypt(Convert.ToString(dataReader["Password"]), encKey.Text);
+                        }
+                    catch
+                    {
+                        encPassword = "****";
+                    }
+                    
+                    dbRow = new string[]              
                     {
                         Convert.ToString(dataReader["Id"]),
                         Convert.ToString(dataReader["Name"]),
-                        Convert.ToString(dataReader["Password"]),
+                        encPassword,
                     };
-
+                    
                     dbRows.Add(dbRow);
                 }
             }
@@ -152,6 +163,16 @@ namespace PasswordKeeperApp
             TextBox textBox = sender as TextBox;
 
             textBox.Background = new SolidColorBrush(Colors.White);
+
+            // Encrypt key TextBox borders
+            if (textBox.Name == "encKey")
+            {
+                // TextBox border color
+                Color borderColor = (Color)ColorConverter.ConvertFromString("#FFAAAAAA");
+
+                textBox.BorderBrush = new SolidColorBrush(borderColor);
+                textBox.BorderThickness = new Thickness(1);
+            }
         }
 
         // Add placeholder event
@@ -183,6 +204,14 @@ namespace PasswordKeeperApp
                 else if (textBox.Name == "editSiteName" || textBox.Name == "newSiteName")
                 {
                     textBoxWatermark = "Site name";
+                }
+                else if (textBox.Name == "encKey")
+                {
+                    // Encrypt key TextBox borders
+                    textBox.BorderBrush = new SolidColorBrush(Colors.Red);
+                    textBox.BorderThickness = new Thickness(2);
+
+                    textBoxWatermark = "Enter your encryption key";
                 }
                 else
                 {
@@ -217,33 +246,45 @@ namespace PasswordKeeperApp
         /// Add new password method
         private void InsertBtn_Click(object sender, RoutedEventArgs e)
         {
-            try
+            // Check for the existence of an encription key
+            if (encKey.Text != "")
             {
-                SqlCommand command = new SqlCommand(
-                    $"INSERT INTO [Passwords] (Name, Password) VALUES (@Name, @Password)",
-                    sqlConnection);
+                try
+                {
+                    // Encrypt new password
+                    string encPassword = CryptClass.Encrypt(newPassword.Text, encKey.Text);
 
-                command.Parameters.AddWithValue("Name", newSiteName.Text);
-                command.Parameters.AddWithValue("Password", newPassword.Text);
-                command.ExecuteNonQuery();
+                    SqlCommand command = new SqlCommand(
+                        $"INSERT INTO [Passwords] (Name, Password) VALUES (@Name, @Password)",
+                        sqlConnection);
 
-                LoadDbData();
+                    command.Parameters.AddWithValue("Name", newSiteName.Text);
+                    command.Parameters.AddWithValue("Password", encPassword);
+                    command.ExecuteNonQuery();
 
-                ShowStatusAlert("Success");
+                    LoadDbData();
 
-                // Delete data from textboxes
-                newSiteName.Text = "";
-                newPassword.Text = "";
+                    ShowStatusAlert("Success");
 
-                // Add watermark to textboxes
-                showWatermark(newSiteName);
-                showWatermark(newPassword);
+                    // Delete data from textboxes
+                    newSiteName.Text = "";
+                    newPassword.Text = "";
+
+                    // Add watermark to textboxes
+                    showWatermark(newSiteName);
+                    showWatermark(newPassword);
+                }
+                catch (Exception ex)
+                {
+                    //MessageBox.Show(ex.Message);
+                    ShowStatusAlert("Error");
+                }
             }
-            catch (Exception ex)
+            else
             {
-                //MessageBox.Show(ex.Message);
-                ShowStatusAlert("Error");
+                ShowStatusAlert("NoKey");
             }
+            
         }
         //////////////////////////////////////////////////////
 
@@ -296,29 +337,48 @@ namespace PasswordKeeperApp
             Button b = sender as Button;
             ListViewClass listViewClass = b.CommandParameter as ListViewClass;
 
-            // Insert item data to edit menu rows
-            editPasswordId.Text = listViewClass.PassId;
-            editSiteName.Text = listViewClass.SiteName;
-            editPassword.Text = listViewClass.Password;
+            if (listViewClass.Password != "****")
+            {
+                // Insert item data to edit menu rows
+                editPasswordId.Text = listViewClass.PassId;
+                editSiteName.Text = listViewClass.SiteName;
+                editPassword.Text = listViewClass.Password;
 
-            // Show edit menu
-            EditPasswordStackPanel.Visibility = Visibility.Visible;
+                // Show edit menu
+                EditPasswordStackPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ShowStatusAlert("Invalid key!");
+            }
+
+            
         }
 
         // Edit password data
         private void EditBtnClick(object sender, RoutedEventArgs e)
         {
-            // Edit an item in the database
-            SqlCommand command = new SqlCommand(
-                $"UPDATE [Passwords] SET Name = N'{editSiteName.Text}', Password = N'{editPassword.Text}' WHERE Id = {int.Parse(editPasswordId.Text)}",
+            if (encKey.Text != "")
+            {
+                // Encrypt new password
+                string encPassword = CryptClass.Encrypt(editPassword.Text, encKey.Text);
+
+                // Edit an item in the database
+                SqlCommand command = new SqlCommand(
+                $"UPDATE [Passwords] SET Name = N'{editSiteName.Text}', Password = N'{encPassword}' WHERE Id = {int.Parse(editPasswordId.Text)}",
                 sqlConnection);
 
-            command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
 
-            CloseEditBtnClick(sender, e);
+                CloseEditBtnClick(sender, e);
 
-            // Reload data in the ListView
-            LoadDbData();
+                // Reload data in the ListView
+                LoadDbData();
+            }
+            else
+            {
+                ShowStatusAlert("NoKey");
+            }
         }
 
         // Close edit menu
@@ -349,10 +409,19 @@ namespace PasswordKeeperApp
                 AlertBox.Background = new SolidColorBrush(Colors.LightGreen);
                 AlertLabel.Content = "Success";
 
-            }else if(status == "Error")
+            }
+            else if (status == "Error")
             {
                 AlertBox.Background = new SolidColorBrush(Colors.LightPink);
                 AlertLabel.Content = "Error";
+            }
+            else if (status == "NoKey") {
+                AlertBox.Background = new SolidColorBrush(Colors.LightPink);
+                AlertLabel.Content = "No encryption key";
+            }
+            else if (status == "Invalid key!") {
+                AlertBox.Background = new SolidColorBrush(Colors.LightPink);
+                AlertLabel.Content = "Invalid key!";
             }
 
             // Show message
@@ -383,6 +452,17 @@ namespace PasswordKeeperApp
 
             timer.Interval = TimeSpan.FromMilliseconds(millisecond);
             timer.Start();
+        }
+        //////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////
+        /// Encryption key
+
+        // Load data from db to dbRows list
+        private void EncKey_TextChanged(object sender, RoutedEventArgs e)
+        {
+            // Load data from db to dbRows list
+            LoadDbData();
         }
     }
 
